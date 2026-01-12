@@ -50,15 +50,24 @@ function App() {
   const loadFromSupabase = useCallback(async () => {
     setLoading(true);
     try {
-      // Seleciona tudo
-      const { data, error } = await supabase.from('leads').select('*');
+      // Seleciona tudo, ordenado por data (mais recentes primeiro)
+      // Isso ajuda a UI a parecer mais responsiva com os dados relevantes no topo
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        // data_criacao é dd/mm/yyyy no CSV, o que é ruim para ordenação direta de string
+        // mas é o que temos. Idealmente converteríamos para DATE no banco.
+        // Como fallback, ordenamos por ID que tende a ser sequencial
+        .order('id', { ascending: false });
+
       if (error) throw error;
 
       if (data && data.length > 0) {
         setLeads(data);
 
-        // Recalcula max date
+        // Recalcula max date (mantendo lógica anterior)
         let maxDateStr = '2026-01-07';
+        // ...
         let maxDateIso = null;
 
         data.forEach(lead => {
