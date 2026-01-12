@@ -9,8 +9,19 @@ function LeadsTable({ leads }) {
     const currentLeads = leads.slice(startIndex, startIndex + itemsPerPage);
 
     const formatCurrency = (value) => {
-        if (!value || value === '0,00') return 'R$ 0,00';
-        const numValue = parseFloat(value.replace('.', '').replace(',', '.'));
+        if (value === undefined || value === null || value === '') return 'R$ 0,00';
+
+        let numValue = 0;
+        if (typeof value === 'number') {
+            numValue = value;
+        } else {
+            const strVal = String(value);
+            if (strVal === '0,00') return 'R$ 0,00';
+            numValue = parseFloat(strVal.replace(/\./g, '').replace(',', '.'));
+        }
+
+        if (isNaN(numValue)) return 'R$ 0,00';
+
         return new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL'
