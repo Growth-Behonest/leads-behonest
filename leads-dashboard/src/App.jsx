@@ -50,15 +50,14 @@ function App() {
   const loadFromSupabase = useCallback(async () => {
     setLoading(true);
     try {
-      // Seleciona tudo, ordenado por data (mais recentes primeiro)
-      // Isso ajuda a UI a parecer mais responsiva com os dados relevantes no topo
+      // Seleciona tudo (até 10.000 registros para garantir que venha tudo)
       const { data, error } = await supabase
         .from('leads')
         .select('*')
-        // data_criacao é dd/mm/yyyy no CSV, o que é ruim para ordenação direta de string
-        // mas é o que temos. Idealmente converteríamos para DATE no banco.
-        // Como fallback, ordenamos por ID que tende a ser sequencial
-        .order('id', { ascending: false });
+        .order('id', { ascending: false }) // Mais recentes primeiro (ID maior = mais novo)
+        .range(0, 9999); // Supabase limita a 1000 por padrão se não especificar range
+
+      if (error) throw error;
 
       if (error) throw error;
 
