@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { runClientPipeline } from './utils/pipeline';
 import Papa from 'papaparse';
 import Header from './components/Header';
 import Filters from './components/Filters';
@@ -230,67 +231,68 @@ function App() {
     return <Login onLogin={handleLogin} />;
   }
 
-  // Função para atualizar os dados (chama o pipeline)
+
+
+  // ... (other code)
+
+  // Função para atualizar os dados (chama o pipeline client-side)
   const handleRefresh = async () => {
     if (refreshing) return;
 
     setRefreshing(true);
-    setRefreshStatus({ type: 'info', message: 'Iniciando atualização dos dados...' });
+    setRefreshStatus({ type: 'info', message: 'Iniciando atualização dos dados... (Isso pode demorar alguns minutos)' });
+
+    // Token SULTS do .env
+    const token = import.meta.env.VITE_SULTS_API_TOKEN;
+    if (!token) {
+      setRefreshStatus({ type: 'error', message: 'Token da API SULTS não configurado no .env (VITE_SULTS_API_TOKEN)' });
+      setRefreshing(false);
+      return;
+    }
 
     try {
-      const response = await fetch(`${API_URL}/api/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      // Callback para atualizar status na UI
+      const onProgress = (msg) => {
+        setRefreshStatus({ type: 'info', message: msg });
+      };
 
-      const data = await response.json();
+      const newLeads = await runClientPipeline(token, onProgress);
 
-      if (response.ok) {
-        setRefreshStatus({ type: 'info', message: 'Pipeline iniciado! Aguarde alguns minutos...' });
+      if (newLeads && newLeads.length > 0) {
+        setLeads(newLeads);
 
-        // Polling do status
-        const checkStatus = async () => {
-          try {
-            const statusRes = await fetch(`${API_URL}/api/status`);
-            const statusData = await statusRes.json();
+        // Atualiza filtro de data
+        // Recalcula max date
+        // (Copy logic from loadCSV or make a helper? Just simple max search here)
+        let maxDateStr = filters.dataFim;
+        let maxDateIso = null;
 
-            if (!statusData.running) {
-              // Pipeline terminou
-              if (statusData.last_success) {
-                setRefreshStatus({ type: 'success', message: '✅ Dados atualizados com sucesso!' });
-                // Recarrega os dados
-                setTimeout(() => {
-                  loadCSV();
-                  setRefreshStatus(null);
-                }, 2000);
-              } else {
-                setRefreshStatus({ type: 'error', message: `❌ ${statusData.message}` });
-              }
-              setRefreshing(false);
-              return;
+        newLeads.forEach(l => {
+          const parts = l.data_criacao.split("/");
+          if (parts.length === 3) {
+            const iso = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            if (!maxDateIso || iso > maxDateIso) {
+              maxDateIso = iso;
+              maxDateStr = iso;
             }
-
-            // Ainda executando, verifica novamente em 5 segundos
-            setTimeout(checkStatus, 5000);
-          } catch (err) {
-            console.error('Erro ao verificar status:', err);
-            setTimeout(checkStatus, 5000);
           }
-        };
+        });
+        setFilters(prev => ({ ...prev, dataFim: maxDateStr }));
 
-        // Inicia polling após 3 segundos
-        setTimeout(checkStatus, 3000);
+        setRefreshStatus({ type: 'success', message: `✅ Atualizado! ${newLeads.length} leads carregados.` });
 
+        // Opcional: Baixar CSV novo automaticamente?
+        // alert("Dados atualizados! O novo CSV não foi salvo no servidor (Vercel é estático). Use o botão de Exportar para salvar seus dados.");
       } else {
-        setRefreshStatus({ type: 'error', message: data.message || 'Erro ao iniciar atualização' });
-        setRefreshing(false);
+        setRefreshStatus({ type: 'error', message: 'Nenhum lead encontrado ou erro na extração.' });
       }
     } catch (err) {
-      console.error('Erro ao chamar API:', err);
+      console.error('Erro na pipeline:', err);
       setRefreshStatus({
         type: 'error',
-        message: 'Erro de conexão com o servidor. Verifique se a API está rodando (porta 5001).'
+        message: `Erro: ${err.message}`
       });
+    } finally {
       setRefreshing(false);
     }
   };
