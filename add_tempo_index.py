@@ -20,7 +20,7 @@ def parse_date(date_str):
 
 # Main
 print("Carregando CSV...")
-df = pd.read_csv("leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
+df = pd.read_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
 
 print("Parseando datas...")
 df["_parsed_date"] = df["data_criacao"].apply(parse_date)
@@ -67,7 +67,7 @@ for _, row in df.head(10).iterrows():
     print(f"  {row['data_criacao']} -> {row['tempo_index']}")
 
 # Salva
-df.to_csv("leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
+df.to_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
 print("\nCSV atualizado!")
 
 # Amostra: leads mais recentes

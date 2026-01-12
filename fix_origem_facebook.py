@@ -4,7 +4,7 @@ Script para substituir origem 'Facebook' por 'Meta Ads'
 import pandas as pd
 
 # Carregar o CSV
-df = pd.read_csv('leads_sults_consolidado.csv', sep=';', encoding='utf-8-sig')
+df = pd.read_csv('leads-dashboard/public/leads_sults_consolidado.csv', sep=';', encoding='utf-8-sig')
 
 print(f"Total de leads: {len(df)}")
 
@@ -20,6 +20,6 @@ meta_ads_count = len(df[df['origem'] == 'Meta Ads'])
 print(f"Leads com origem 'Meta Ads' após substituição: {meta_ads_count}")
 
 # Salvar
-df.to_csv('leads_sults_consolidado.csv', sep=';', index=False, encoding='utf-8-sig')
+df.to_csv('leads-dashboard/public/leads_sults_consolidado.csv', sep=';', index=False, encoding='utf-8-sig')
 
 print("\n✅ Arquivo atualizado com sucesso!")

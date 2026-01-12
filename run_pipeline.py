@@ -12,7 +12,7 @@ from datetime import datetime
 
 # Diretório base do projeto
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CSV_FILE = os.path.join(BASE_DIR, "leads_sults_consolidado.csv")
+CSV_FILE = os.path.join(BASE_DIR, "leads-dashboard/public/leads_sults_consolidado.csv")
 DASHBOARD_PUBLIC = os.path.join(BASE_DIR, "leads-dashboard", "public")
 
 def run_script(script_name, description):
@@ -75,7 +75,7 @@ def copy_to_dashboard():
     print(f"{'='*60}")
     
     try:
-        dest = os.path.join(DASHBOARD_PUBLIC, "leads_sults_consolidado.csv")
+        dest = os.path.join(DASHBOARD_PUBLIC, "leads-dashboard/public/leads_sults_consolidado.csv")
         shutil.copy2(CSV_FILE, dest)
         print(f"✅ CSV copiado para {dest}")
         return True

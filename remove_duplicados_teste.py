@@ -4,7 +4,7 @@ Script para remover leads com motivo_perda = DUPLICADO ou Teste
 import pandas as pd
 
 # Carregar o CSV com encoding UTF-8
-df = pd.read_csv('leads_sults_consolidado.csv', sep=';', encoding='utf-8-sig')
+df = pd.read_csv('leads-dashboard/public/leads_sults_consolidado.csv', sep=';', encoding='utf-8-sig')
 
 print(f"Total de leads antes da limpeza: {len(df)}")
 print()
@@ -29,7 +29,7 @@ print(f"Total de leads após a limpeza: {len(df_limpo)}")
 print(f"Leads removidos: {len(df) - len(df_limpo)}")
 
 # Salvar o arquivo atualizado
-df_limpo.to_csv('leads_sults_consolidado.csv', sep=';', index=False, encoding='utf-8-sig')
+df_limpo.to_csv('leads-dashboard/public/leads_sults_consolidado.csv', sep=';', index=False, encoding='utf-8-sig')
 
 print()
-print("✅ Arquivo 'leads_sults_consolidado.csv' atualizado com sucesso!")
+print("✅ Arquivo 'leads-dashboard/public/leads_sults_consolidado.csv' atualizado com sucesso!")

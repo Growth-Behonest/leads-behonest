@@ -72,7 +72,7 @@ def calculate_location_index(row):
 
 # Main
 print("Carregando CSV...")
-df = pd.read_csv("leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
+df = pd.read_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
 
 print("Recalculando localizacao_index...")
 df["localizacao_index"] = df.apply(calculate_location_index, axis=1)
@@ -101,7 +101,7 @@ other_states = df[~df["estado"].isin(VALID_STATES)][["id", "cidade", "estado", "
 print(other_states.to_string())
 
 # Salva
-df.to_csv("leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
+df.to_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
 print("\nCSV atualizado!")
 
 # Recalcula score_index também

@@ -43,7 +43,7 @@ def format_br(value):
 
 # Main
 print("Carregando CSV...")
-df = pd.read_csv("leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
+df = pd.read_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
 
 print("Parseando valores de investimento...")
 df["_invest_float"] = df["valor_disponivel_para_investimento"].apply(parse_br_currency)
@@ -78,7 +78,7 @@ print("  R$ 150.000 -> 0,75")
 print("  R$ 200.000+ -> 1,0")
 
 # Salva
-df.to_csv("leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
+df.to_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
 print("\nCSV atualizado com coluna 'investimento_index'!")
 
 # Amostra

@@ -31,7 +31,7 @@ def classify(score):
 
 # Main
 print("Carregando CSV...")
-df = pd.read_csv("leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
+df = pd.read_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
 
 print("Classificando leads baseado no score_index...")
 df["_score_float"] = df["score_index"].apply(parse_br_decimal)
@@ -50,7 +50,7 @@ for classif in ["MQL+", "MQL", "LEAD+", "LEAD", "DESQUALIFICADO 100%"]:
         print(f"  {classif}: {count} ({pct:.1f}%)")
 
 # Salva
-df.to_csv("leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
+df.to_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
 print("\nCSV atualizado com coluna 'classificacao_index'!")
 
 # Amostra

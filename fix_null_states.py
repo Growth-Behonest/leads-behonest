@@ -218,7 +218,7 @@ def infer_state(row):
 
 def main():
     print("Carregando CSV...")
-    df = pd.read_csv("leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
+    df = pd.read_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
     
     print(f"Total de linhas: {len(df)}")
     
@@ -243,7 +243,7 @@ def main():
     print(f"Corrigidos: {nulls_before - nulls_after}")
     
     # Salva
-    df.to_csv("leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
+    df.to_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
     print("CSV atualizado com sucesso!")
     
     # Lista restantes com null

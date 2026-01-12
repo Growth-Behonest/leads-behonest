@@ -16,7 +16,7 @@ import certifi
 # Insira seu Token SULTS aqui
 API_TOKEN = "O2JlaG9uZXN0YnJhc2lsOzE3NTI3ODQ3ODg1OTY="
 BASE_URL = "https://api.sults.com.br/api/v1/expansao"
-OUTPUT_FILE = "leads_sults_consolidado.csv"
+OUTPUT_FILE = "leads-dashboard/public/leads_sults_consolidado.csv"
 
 # Configurações de Concorrência e Retry
 MAX_CONCURRENT_REQUESTS = 10  # Limite de requisições simultâneas

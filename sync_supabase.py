@@ -48,7 +48,7 @@ def sync_leads():
     print("Connecting to Supabase...")
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
     
-    csv_path = 'leads_sults_consolidado.csv'
+    csv_path = 'leads-dashboard/public/leads_sults_consolidado.csv'
     if not os.path.exists(csv_path):
         print(f"Error: {csv_path} not found.")
         return

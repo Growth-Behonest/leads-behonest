@@ -161,7 +161,7 @@ def fix_state(row):
 
 # Main
 print("Carregando CSV...")
-df = pd.read_csv("leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
+df = pd.read_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
 
 def is_empty(val):
     return pd.isna(val) or str(val).strip() == "" or str(val).strip().lower() in ["null", "nan"]
@@ -176,7 +176,7 @@ empty_after = df["estado"].apply(is_empty).sum()
 print(f"Vazios depois: {empty_after}")
 print(f"Corrigidos: {empty_before - empty_after}")
 
-df.to_csv("leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
+df.to_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
 print("Salvo!")
 
 # Mostra restantes

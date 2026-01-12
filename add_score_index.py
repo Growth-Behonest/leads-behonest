@@ -20,7 +20,7 @@ def format_br(value):
 
 # Main
 print("Carregando CSV...")
-df = pd.read_csv("leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
+df = pd.read_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", encoding="utf-8-sig")
 
 print("Calculando score_index = (localizacao_index * 3) + (investimento_index * 2) + (tempo_index * 0,5)")
 
@@ -46,7 +46,7 @@ print(f"  Máximo: {format_br(scores.max())}")
 print(f"  Média: {format_br(scores.mean())}")
 
 # Salva
-df.to_csv("leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
+df.to_csv("leads-dashboard/public/leads_sults_consolidado.csv", sep=";", index=False, encoding="utf-8-sig")
 print("\nCSV atualizado com coluna 'score_index'!")
 
 # Top 10 leads
