@@ -32,6 +32,7 @@ function Login({ onLogin }) {
                             setPassword(e.target.value);
                             setError(false);
                         }}
+                        autoComplete="current-password"
                         autoFocus
                     />
                     {error && <div className="error-msg">Senha incorreta</div>}

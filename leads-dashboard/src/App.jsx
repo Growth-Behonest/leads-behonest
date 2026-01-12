@@ -91,76 +91,6 @@ function App() {
     }
   }, [loadCSV, isAuthenticated]);
 
-  // Se não estiver autenticado, mostra login
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
-  }
-
-  // Função para atualizar os dados (chama o pipeline)
-  const handleRefresh = async () => {
-    if (refreshing) return;
-
-    setRefreshing(true);
-    setRefreshStatus({ type: 'info', message: 'Iniciando atualização dos dados...' });
-
-    try {
-      const response = await fetch(`${API_URL}/api/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setRefreshStatus({ type: 'info', message: 'Pipeline iniciado! Aguarde alguns minutos...' });
-
-        // Polling do status
-        const checkStatus = async () => {
-          try {
-            const statusRes = await fetch(`${API_URL}/api/status`);
-            const statusData = await statusRes.json();
-
-            if (!statusData.running) {
-              // Pipeline terminou
-              if (statusData.last_success) {
-                setRefreshStatus({ type: 'success', message: '✅ Dados atualizados com sucesso!' });
-                // Recarrega os dados
-                setTimeout(() => {
-                  loadCSV();
-                  setRefreshStatus(null);
-                }, 2000);
-              } else {
-                setRefreshStatus({ type: 'error', message: `❌ ${statusData.message}` });
-              }
-              setRefreshing(false);
-              return;
-            }
-
-            // Ainda executando, verifica novamente em 5 segundos
-            setTimeout(checkStatus, 5000);
-          } catch (err) {
-            console.error('Erro ao verificar status:', err);
-            setTimeout(checkStatus, 5000);
-          }
-        };
-
-        // Inicia polling após 3 segundos
-        setTimeout(checkStatus, 3000);
-
-      } else {
-        setRefreshStatus({ type: 'error', message: data.message || 'Erro ao iniciar atualização' });
-        setRefreshing(false);
-      }
-    } catch (err) {
-      console.error('Erro ao chamar API:', err);
-      setRefreshStatus({
-        type: 'error',
-        message: 'Erro de conexão com o servidor. Verifique se a API está rodando (porta 5001).'
-      });
-      setRefreshing(false);
-    }
-  };
-
   // Extrai opções únicas para os filtros
   const filterOptions = useMemo(() => {
     const getUnique = (field) => {
@@ -294,6 +224,78 @@ function App() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
+
+  // Se não estiver autenticado, mostra login
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  // Função para atualizar os dados (chama o pipeline)
+  const handleRefresh = async () => {
+    if (refreshing) return;
+
+    setRefreshing(true);
+    setRefreshStatus({ type: 'info', message: 'Iniciando atualização dos dados...' });
+
+    try {
+      const response = await fetch(`${API_URL}/api/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setRefreshStatus({ type: 'info', message: 'Pipeline iniciado! Aguarde alguns minutos...' });
+
+        // Polling do status
+        const checkStatus = async () => {
+          try {
+            const statusRes = await fetch(`${API_URL}/api/status`);
+            const statusData = await statusRes.json();
+
+            if (!statusData.running) {
+              // Pipeline terminou
+              if (statusData.last_success) {
+                setRefreshStatus({ type: 'success', message: '✅ Dados atualizados com sucesso!' });
+                // Recarrega os dados
+                setTimeout(() => {
+                  loadCSV();
+                  setRefreshStatus(null);
+                }, 2000);
+              } else {
+                setRefreshStatus({ type: 'error', message: `❌ ${statusData.message}` });
+              }
+              setRefreshing(false);
+              return;
+            }
+
+            // Ainda executando, verifica novamente em 5 segundos
+            setTimeout(checkStatus, 5000);
+          } catch (err) {
+            console.error('Erro ao verificar status:', err);
+            setTimeout(checkStatus, 5000);
+          }
+        };
+
+        // Inicia polling após 3 segundos
+        setTimeout(checkStatus, 3000);
+
+      } else {
+        setRefreshStatus({ type: 'error', message: data.message || 'Erro ao iniciar atualização' });
+        setRefreshing(false);
+      }
+    } catch (err) {
+      console.error('Erro ao chamar API:', err);
+      setRefreshStatus({
+        type: 'error',
+        message: 'Erro de conexão com o servidor. Verifique se a API está rodando (porta 5001).'
+      });
+      setRefreshing(false);
+    }
+  };
+
+
 
   if (loading) {
     return (
