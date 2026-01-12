@@ -215,7 +215,8 @@ function App() {
 
       // Filtro por valor disponível
       if (filters.valor) {
-        const valorLead = parseFloat(lead.valor_disponivel_para_investimento?.replace('.', '').replace(',', '.') || 0);
+        const valorStr = String(lead.valor_disponivel_para_investimento || '0');
+        const valorLead = parseFloat(valorStr.replace(/\./g, '').replace(',', '.') || 0);
         const valorFiltro = parseFloat(filters.valor);
         if (valorLead !== valorFiltro) return false;
       }
