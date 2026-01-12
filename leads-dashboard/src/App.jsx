@@ -50,26 +50,42 @@ function App() {
   const loadFromSupabase = useCallback(async () => {
     setLoading(true);
     try {
-      // Seleciona tudo (até 10.000 registros para garantir que venha tudo)
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
-        .order('id', { ascending: false }) // Mais recentes primeiro (ID maior = mais novo)
-        .range(0, 9999); // Supabase limita a 1000 por padrão se não especificar range
+      // Busca paginada: carrega em lotes de 500 para evitar timeout
+      const BATCH_SIZE = 500;
+      let allLeads = [];
+      let offset = 0;
+      let hasMore = true;
 
-      if (error) throw error;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('leads')
+          .select('*')
+          .order('id', { ascending: false })
+          .range(offset, offset + BATCH_SIZE - 1);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      if (data && data.length > 0) {
-        setLeads(data);
+        if (data && data.length > 0) {
+          allLeads = [...allLeads, ...data];
+          offset += BATCH_SIZE;
 
-        // Recalcula max date (mantendo lógica anterior)
+          // Se veio menos que o batch, acabou
+          if (data.length < BATCH_SIZE) {
+            hasMore = false;
+          }
+        } else {
+          hasMore = false;
+        }
+      }
+
+      if (allLeads.length > 0) {
+        setLeads(allLeads);
+
+        // Recalcula max date
         let maxDateStr = '2026-01-07';
-        // ...
         let maxDateIso = null;
 
-        data.forEach(lead => {
+        allLeads.forEach(lead => {
           if (lead.data_criacao) {
             const parts = lead.data_criacao.split('/');
             if (parts.length === 3) {
@@ -85,8 +101,6 @@ function App() {
       }
     } catch (err) {
       console.error("Erro ao carregar do Supabase:", err);
-      // Fallback para CSV se falhar?
-      // alert("Erro ao carregar do banco de dados.");
     } finally {
       setLoading(false);
     }
