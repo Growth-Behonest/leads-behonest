@@ -1,0 +1,8 @@
+aiohttp
+pandas
+beautifulsoup4
+tqdm
+certifi
+flask
+flask-cors
+supabase
