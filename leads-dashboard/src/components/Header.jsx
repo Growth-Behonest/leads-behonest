@@ -9,7 +9,6 @@ function Header() {
       <nav className="header-nav">
         <a href="#dashboard">Dashboard</a>
         <a href="#leads">Leads</a>
-        <a href="#relatorios">Relatórios</a>
       </nav>
     </header>
   );

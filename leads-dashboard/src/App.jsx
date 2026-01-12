@@ -402,7 +402,7 @@ function App() {
         />
 
         {/* Grid de Gráficos */}
-        <div className="charts-grid">
+        <div id="dashboard" className="charts-grid">
           <DonutChart data={filteredLeads} />
           <OriginChart data={filteredLeads} />
         </div>
@@ -411,7 +411,9 @@ function App() {
         <ClassificationLossChart data={filteredLeads} />
 
         {/* Tabela de Leads */}
-        <LeadsTable leads={filteredLeads} />
+        <div id="leads">
+          <LeadsTable leads={filteredLeads} />
+        </div>
       </main>
     </>
   );
