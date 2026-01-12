@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { runClientPipeline } from './utils/pipeline';
+import { supabase } from './services/supabase';
 import Papa from 'papaparse';
 import Header from './components/Header';
 import Filters from './components/Filters';
@@ -41,56 +42,127 @@ function App() {
     setIsAuthenticated(true);
   };
 
-  // Função para carregar o CSV
-  const loadCSV = useCallback(() => {
-    fetch('/leads_sults_consolidado.csv?t=' + Date.now()) // Cache bust
-      .then(response => response.text())
-      .then(csvText => {
-        Papa.parse(csvText, {
-          header: true,
-          delimiter: ';',
-          skipEmptyLines: true,
-          complete: (results) => {
-            setLeads(results.data);
 
-            // Encontra a data mais recente
-            let maxDate = null;
-            let maxDateStr = '2026-01-07'; // Fallback
 
-            results.data.forEach(lead => {
-              if (lead.data_criacao) {
-                // Formato esperado: dd/mm/yyyy
-                const parts = lead.data_criacao.split('/');
-                if (parts.length === 3) {
-                  // Cria data para comparação (yyyy-mm-dd)
-                  // Nota: lead.data_criacao está em dd/mm/yyyy
-                  const isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+  // ...
 
-                  if (!maxDate || isoDate > maxDate) {
-                    maxDate = isoDate;
-                    maxDateStr = isoDate;
-                  }
-                }
+  // Função para carregar do Supabase
+  const loadFromSupabase = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Seleciona tudo
+      const { data, error } = await supabase.from('leads').select('*');
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setLeads(data);
+
+        // Recalcula max date
+        let maxDateStr = '2026-01-07';
+        let maxDateIso = null;
+
+        data.forEach(lead => {
+          if (lead.data_criacao) {
+            const parts = lead.data_criacao.split('/');
+            if (parts.length === 3) {
+              const iso = `${parts[2]}-${parts[1]}-${parts[0]}`;
+              if (!maxDateIso || iso > maxDateIso) {
+                maxDateIso = iso;
+                maxDateStr = iso;
               }
-            });
-
-            setFilters(prev => ({ ...prev, dataFim: maxDateStr }));
-            setLoading(false);
+            }
           }
         });
-      })
-      .catch(err => {
-        console.error('Erro ao carregar CSV:', err);
-        setLoading(false);
-      });
+        setFilters(prev => ({ ...prev, dataFim: maxDateStr }));
+      }
+    } catch (err) {
+      console.error("Erro ao carregar do Supabase:", err);
+      // Fallback para CSV se falhar?
+      // alert("Erro ao carregar do banco de dados.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Carrega o CSV na inicialização
+  // Carrega na inicialização
   useEffect(() => {
     if (isAuthenticated) {
-      loadCSV();
+      loadFromSupabase();
     }
-  }, [loadCSV, isAuthenticated]);
+  }, [loadFromSupabase, isAuthenticated]);
+
+  // ... (filters/stats useMemos remain roughly same)
+
+  // Função para atualizar os dados (chama o pipeline + sync Supabase)
+  const handleRefresh = async () => {
+    if (refreshing) return;
+
+    setRefreshing(true);
+    setRefreshStatus({ type: 'info', message: 'Iniciando atualização dos dados... (Isso pode demorar alguns minutos)' });
+
+    // Token SULTS do .env
+    const token = import.meta.env.VITE_SULTS_API_TOKEN;
+    if (!token) {
+      setRefreshStatus({ type: 'error', message: 'Token SULTS não encontrado.' });
+      setRefreshing(false);
+      return;
+    }
+
+    try {
+      const onProgress = (msg) => {
+        setRefreshStatus({ type: 'info', message: msg });
+      };
+
+      const newLeads = await runClientPipeline(token, onProgress);
+
+      if (newLeads && newLeads.length > 0) {
+        setLeads(newLeads);
+
+        // Sincroniza com Supabase
+        onProgress("Salvando dados no Supabase...");
+
+        // Split in batches
+        const BATCH_SIZE = 100;
+        for (let i = 0; i < newLeads.length; i += BATCH_SIZE) {
+          const batch = newLeads.slice(i, i + BATCH_SIZE);
+          const { error } = await supabase.from('leads').upsert(batch);
+          if (error) {
+            console.error("Erro no batch Supabase:", error);
+            // Continue or break?
+            // throw error; // maybe better to log and continue or partial fail
+          }
+        }
+
+        // Recalculates Max Date filter
+        let maxDateStr = filters.dataFim;
+        let maxDateIso = null;
+        newLeads.forEach(l => {
+          const parts = l.data_criacao.split("/");
+          if (parts.length === 3) {
+            const iso = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            if (!maxDateIso || iso > maxDateIso) {
+              maxDateIso = iso;
+              maxDateStr = iso;
+            }
+          }
+        });
+        setFilters(prev => ({ ...prev, dataFim: maxDateStr }));
+
+        setRefreshStatus({ type: 'success', message: '✅ Dados atualizados e salvos no Supabase!' });
+
+      } else {
+        setRefreshStatus({ type: 'error', message: 'Nenhum lead encontrado.' });
+      }
+    } catch (err) {
+      console.error('Erro na pipeline:', err);
+      setRefreshStatus({
+        type: 'error',
+        message: `Erro: ${err.message}`
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Extrai opções únicas para os filtros
   const filterOptions = useMemo(() => {
@@ -235,67 +307,7 @@ function App() {
 
   // ... (other code)
 
-  // Função para atualizar os dados (chama o pipeline client-side)
-  const handleRefresh = async () => {
-    if (refreshing) return;
 
-    setRefreshing(true);
-    setRefreshStatus({ type: 'info', message: 'Iniciando atualização dos dados... (Isso pode demorar alguns minutos)' });
-
-    // Token SULTS do .env
-    const token = import.meta.env.VITE_SULTS_API_TOKEN;
-    if (!token) {
-      setRefreshStatus({ type: 'error', message: 'Token da API SULTS não configurado no .env (VITE_SULTS_API_TOKEN)' });
-      setRefreshing(false);
-      return;
-    }
-
-    try {
-      // Callback para atualizar status na UI
-      const onProgress = (msg) => {
-        setRefreshStatus({ type: 'info', message: msg });
-      };
-
-      const newLeads = await runClientPipeline(token, onProgress);
-
-      if (newLeads && newLeads.length > 0) {
-        setLeads(newLeads);
-
-        // Atualiza filtro de data
-        // Recalcula max date
-        // (Copy logic from loadCSV or make a helper? Just simple max search here)
-        let maxDateStr = filters.dataFim;
-        let maxDateIso = null;
-
-        newLeads.forEach(l => {
-          const parts = l.data_criacao.split("/");
-          if (parts.length === 3) {
-            const iso = `${parts[2]}-${parts[1]}-${parts[0]}`;
-            if (!maxDateIso || iso > maxDateIso) {
-              maxDateIso = iso;
-              maxDateStr = iso;
-            }
-          }
-        });
-        setFilters(prev => ({ ...prev, dataFim: maxDateStr }));
-
-        setRefreshStatus({ type: 'success', message: `✅ Atualizado! ${newLeads.length} leads carregados.` });
-
-        // Opcional: Baixar CSV novo automaticamente?
-        // alert("Dados atualizados! O novo CSV não foi salvo no servidor (Vercel é estático). Use o botão de Exportar para salvar seus dados.");
-      } else {
-        setRefreshStatus({ type: 'error', message: 'Nenhum lead encontrado ou erro na extração.' });
-      }
-    } catch (err) {
-      console.error('Erro na pipeline:', err);
-      setRefreshStatus({
-        type: 'error',
-        message: `Erro: ${err.message}`
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  };
 
 
 
