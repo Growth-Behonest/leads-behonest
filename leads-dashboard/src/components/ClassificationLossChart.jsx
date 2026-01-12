@@ -109,8 +109,8 @@ function ClassificationLossChart({ data }) {
             <p style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '1rem' }}>
                 Análise de {lostLeads.length} leads perdidos
             </p>
-            <div className="chart-container">
-                <ResponsiveContainer width="100%" height={350}>
+            <div className="chart-container chart-responsive-wrapper">
+                <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                         <XAxis type="number" stroke="#fff" tick={{ fill: '#ccc', fontSize: 12 }} />

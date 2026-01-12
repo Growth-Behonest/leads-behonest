@@ -732,3 +732,16 @@ h6 {
     justify-content: center;
   }
 }
+
+/* Responsive Chart Wrapper */
+.chart-responsive-wrapper {
+  height: 350px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .chart-responsive-wrapper {
+    height: 600px;
+    /* Mais alto no mobile para caber as barras/labels */
+  }
+}
