@@ -111,19 +111,32 @@ def sync_leads():
 
     records = valid_records
 
-    # Upsert data in batches
-    batch_size = 100
-    print(f"Upserting {len(records)} records in batches of {batch_size}...")
+    # Clear existing data and insert fresh (safer than upsert with compatibility issues)
+    batch_size = 50
+    print(f"Syncing {len(records)} records in batches of {batch_size}...")
+    
+    success_count = 0
+    error_count = 0
     
     for i in range(0, len(records), batch_size):
         batch = records[i:i + batch_size]
+        batch_num = i // batch_size + 1
         try:
-            response = supabase.table('leads').upsert(batch).execute()
+            # Delete existing records for these IDs first
+            ids_to_update = [r["id"] for r in batch]
+            supabase.table('leads').delete().in_("id", ids_to_update).execute()
+            
+            # Insert fresh records
+            response = supabase.table('leads').insert(batch).execute()
+            success_count += len(batch)
+            print(f"Batch {batch_num}: OK ({success_count}/{len(records)})")
         except Exception as e:
-            print(f"Error upserting batch {i//batch_size}: {e}")
-            break
+            error_count += len(batch)
+            print(f"Batch {batch_num} error: {e}")
+            # Continue with next batch instead of breaking
+            continue
 
-    print("Sync complete.")
+    print(f"Sync complete. Success: {success_count}, Errors: {error_count}")
 
 if __name__ == "__main__":
     sync_leads()
