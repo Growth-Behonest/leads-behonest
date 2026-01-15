@@ -256,7 +256,8 @@ export async function runClientPipeline(token, onProgress) {
                 etiquetas: (lead.etiqueta || []).map(t => t.nome).join(", "),
                 situacao: lead.situacao?.nome,
                 motivo_perda: lead.situacaoPerdaMotivo?.nome,
-                valor_disponivel_para_investimento: availableValue
+                valor_disponivel_para_investimento: availableValue,
+                etapa_funil: lead.etapa?.nome
             };
         });
 

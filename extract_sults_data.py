@@ -542,7 +542,8 @@ async def main_corrected():
                     "etiquetas": ", ".join([t["nome"] for t in (lead.get("etiqueta") or [])]),
                     "situacao": lead.get("situacao", {}).get("nome") if lead.get("situacao") else None,
                     "motivo_perda": motivo_final,
-                    "valor_disponivel_para_investimento": val_formatted
+                    "valor_disponivel_para_investimento": val_formatted,
+                    "etapa_funil": lead.get("etapa", {}).get("nome") if lead.get("etapa") else None
                 }
 
         tasks = []

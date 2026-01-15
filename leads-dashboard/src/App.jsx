@@ -33,6 +33,7 @@ function App() {
     classificacao: [],
     origem: [],
     estado: [],
+    etapaFunil: [],
     dataInicio: '2023-11-09',
     dataFim: '2026-01-07'
   });
@@ -210,7 +211,8 @@ function App() {
       situacoes: getUnique('situacao'),
       classificacoes: getUnique('classificacao_index'),
       origens: getUnique('origem'),
-      estados: getUnique('estado')
+      estados: getUnique('estado'),
+      etapasFunil: getUnique('etapa_funil')
     };
   }, [leads]);
 
@@ -255,6 +257,11 @@ function App() {
 
       // Filtro por estado (Multi)
       if (filters.estado.length > 0 && !filters.estado.includes(lead.estado)) {
+        return false;
+      }
+
+      // Filtro por etapa do funil (Multi)
+      if (filters.etapaFunil.length > 0 && !filters.etapaFunil.includes(lead.etapa_funil)) {
         return false;
       }
 

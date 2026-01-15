@@ -15,6 +15,7 @@ function Filters({ filters, setFilters, options }) {
             classificacao: [],
             origem: [],
             estado: [],
+            etapaFunil: [],
             dataInicio: '2023-11-09',
             dataFim: '2026-01-07'
         });
@@ -93,6 +94,13 @@ function Filters({ filters, setFilters, options }) {
                     options={options.estados}
                     selected={filters.estado}
                     onChange={(val) => handleChange('estado', val)}
+                />
+
+                <MultiSelect
+                    label="Etapa do Funil"
+                    options={options.etapasFunil}
+                    selected={filters.etapaFunil}
+                    onChange={(val) => handleChange('etapaFunil', val)}
                 />
 
                 <div className="filter-group">

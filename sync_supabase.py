@@ -90,7 +90,8 @@ def sync_leads():
                 "investimento_index": clean_float(get_val('investimento_index')),
                 "tempo_index": clean_float(get_val('tempo_index')),
                 "score_index": clean_float(get_val('score_index')),
-                "classificacao_index": get_val('classificacao_index')
+                "classificacao_index": get_val('classificacao_index'),
+                "etapa_funil": get_val('etapa_funil')
             }
             
             records.append(record)
